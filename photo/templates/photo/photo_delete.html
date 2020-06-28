@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}
+{% endblock %}
+
+
+{% block content %}
+<div class = "alert alert-primary" role="alert">
+    진짜로 "{{object}}" 지울건가요?
+</div>
+
+<from action="" method="POST">
+    {% csrf_token %}
+    <input type="submit" value="Delete OK">
+</from>
+{% endblock %}
