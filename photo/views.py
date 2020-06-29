@@ -1,5 +1,5 @@
 from django.shortcuts import render,redirect,redirect,HttpResponseRedirect
-from django.http import HttpResponseForbidden
+from django.http import HttpResponseForbidden,HttpResponse
 from urllib.parse import urlparse
 
 from django.views.generic.list import ListView
@@ -67,10 +67,11 @@ class PhotoDetail(DetailView):
 
 class PhotoLike(View):
     
-    def get(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs): #kwargs ['photo_id':3]
+       
         if not request.user.is_authenticated:
-            return HttpResponseForbidden()
-        
+            # return HttpResponseForbidden()
+            return HttpResponse('로그인 해주세요')
         else:
             if 'photo_id' in kwargs:
                 photo_id = kwargs['photo_id']
@@ -81,9 +82,11 @@ class PhotoLike(View):
                 else:
                     photo.like.add(user)
             
-            referer_url = request.META.get('HTTP_REFERER')
-            path = urlparse(referer_url).path
-            print(path,'   in views')
+            
+            #바로 직전 화면으로 보내는 테크닉
+            referer_url = request.META.get('HTTP_REFERER') # referer_url =http://127.0.0.1:8000/ or http://127.0.0.1:8000/detail/3/                                                  
+            path = urlparse(referer_url).path # path='/' or /detail/3/
+            print(referer_url, path)
             return HttpResponseRedirect(path)
             
             
@@ -95,7 +98,7 @@ class PhotoFavorite(View):
             if 'photo_id' in kwargs:
                 photo_id = kwargs['photo_id']
                 photo =Photo.objects.get(pk=photo_id)
-                user = request.username
+                user = request.user
                 
                 if user in photo.favorite.all():
                     photo.favorite.remove(user)
@@ -103,3 +106,34 @@ class PhotoFavorite(View):
                 else:
                     photo.favorite.add(user)
             return HttpResponseRedirect('/')
+
+class PhotoLikeList(ListView):
+    model =Photo
+    template_name = 'photo/photo_list.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.warning(request, '로그인을 먼저하세요')
+            return HttpResponseRedirect('/')
+        return super(PhotoLikeList,self).dispatch(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = user.like_post.all()
+        return queryset
+    
+    
+class PhotoFavoriteList(ListView):
+    model =Photo
+    template_name = 'photo/photo_list.html'
+    
+    def dispatch(self, request, *args, **kwargs):
+        if not request.user.is_authenticated:
+            messages.warning(request, '로그인을 먼저하세요')
+            return HttpResponseRedirect('/')
+        return super(PhotoFavoriteList,self).dispatch(request, *args, **kwargs)
+    
+    def get_queryset(self):
+        user = self.request.user
+        queryset = user.favorite_post.all()
+        return queryset

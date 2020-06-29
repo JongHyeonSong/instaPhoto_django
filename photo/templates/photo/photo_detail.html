@@ -13,7 +13,20 @@
                 <h5 class="card-title"> {{object.author}}</h5>
                 <p class="card-text"> {{object.text}}</p>
             </div>
-
+            <hr>
+            <ul class ="list-group list-group-flush">
+                <li class ="list-group-item">
+                    <a href="{% url 'photo:like' object.id %}" 
+                    class="float-left btn-like {% if user in object.like.all %}active{%endif%}">좋아요!</a>
+                    {% if object.like.all.count %}
+                    <span>{{object.like.all.count}}</span>
+                    {% endif %}
+                    <a href="{% url 'photo:favorite' object.id %}" 
+                    class="float-right btn-favorite{% if user in object.like.all%}active{%endif%}">저장하기</a>
+                </li>
+                <li class="list-group-item">생성일 : {{ object.created }}</li>
+                <li class="list-group-item">디스쿠스</li>
+            </ul>
             <div class="card-body">
                 <a href="{% url 'photo:update' object.id %}" class="card-link">수정하기</a>
                 <a href="{% url 'photo:delete' object.id %}" class="card-link">삭제</a>
